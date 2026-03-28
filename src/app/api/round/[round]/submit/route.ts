@@ -82,5 +82,29 @@ export async function POST(req: Request, { params }: Params) {
     });
   }
 
-  return NextResponse.json({ ok: true, gained });
+  const subs = await prisma.quizSubmission.findMany({
+    where: { teamId: session.teamId, questionId: { in: questions.map((q) => q.id) } },
+  });
+  const subByQ = new Map(subs.map((s) => [s.questionId, s]));
+  let roundScore = 0;
+  const roundMax = questions.reduce((s, q) => s + q.points, 0);
+  for (const q of questions) {
+    const sub = subByQ.get(q.id);
+    if (sub) roundScore += sub.score;
+  }
+  const allAnswered = questions.every((q) => {
+    const sub = subByQ.get(q.id);
+    if (!sub) return false;
+    return q.kind === QuizKind.MCQ
+      ? sub.choiceIndex != null
+      : (sub.answerText?.trim().length ?? 0) > 0;
+  });
+
+  return NextResponse.json({
+    ok: true,
+    gained,
+    roundScore,
+    roundMax,
+    roundComplete: allAnswered,
+  });
 }

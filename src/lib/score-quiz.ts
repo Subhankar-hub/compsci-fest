@@ -1,4 +1,5 @@
 import { QuizKind, type QuizQuestion } from "@prisma/client";
+import { normalizeShortAnswer } from "@/lib/short-answer-normalize";
 
 export function scoreAnswer(
   q: QuizQuestion,
@@ -9,11 +10,11 @@ export function scoreAnswer(
     if (choiceIndex == null || q.correctIndex == null) return 0;
     return choiceIndex === q.correctIndex ? q.points : 0;
   }
-  const raw = (answerText ?? "").trim().toLowerCase();
+  const raw = normalizeShortAnswer(answerText ?? "");
   if (!raw) return 0;
   const acc = (q.acceptable as string[] | null) ?? [];
   for (const a of acc) {
-    if (raw === a.trim().toLowerCase()) return q.points;
+    if (raw === normalizeShortAnswer(a)) return q.points;
   }
   return 0;
 }

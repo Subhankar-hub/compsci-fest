@@ -4,6 +4,7 @@ import { getTeamSession } from "@/lib/session";
 import { ensureVerifiedParticipant } from "@/lib/team-verification";
 import { assertRoundOpen } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
+import { buildBundledSource } from "@/lib/coding-bundle";
 import { runJudge0 } from "@/lib/judge0";
 
 const bodySchema = z.object({
@@ -42,7 +43,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unknown problem" }, { status: 404 });
   }
 
-  const tests = problem.tests as { input: string; output: string }[];
+  const testsRaw = problem.tests;
+  const bundled = buildBundledSource(parsed.data.code, parsed.data.langId ?? problem.judge0LangId, testsRaw);
+  if (!bundled.ok) {
+    return NextResponse.json({ error: bundled.error }, { status: 400 });
+  }
+  const { source: judgeSource, cases: tests } = bundled;
   const hasKey = Boolean(process.env.RAPIDAPI_KEY);
 
   if (!hasKey) {
@@ -80,7 +86,7 @@ export async function POST(req: Request) {
   }
 
   const judgeLang = parsed.data.langId ?? problem.judge0LangId;
-  const result = await runJudge0(parsed.data.code, judgeLang, tests);
+  const result = await runJudge0(judgeSource, judgeLang, tests);
   const ratio = tests.length ? result.passed / tests.length : 0;
   const score = Math.round(ratio * problem.points);
 

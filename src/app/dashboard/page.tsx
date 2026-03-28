@@ -116,21 +116,21 @@ export default function DashboardPage() {
                 href="/round/1"
                 className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 hover:border-slate-700"
               >
-                <span className="font-medium text-white">Round 1 — Core CS (MCQ)</span>
+                <span className="font-medium text-white">Round 1 — 30 MCQ (core CS)</span>
                 <span className="text-sky-400">Open →</span>
               </Link>
               <Link
                 href="/round/2"
                 className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 hover:border-slate-700"
               >
-                <span className="font-medium text-white">Round 2 — Mixed (short + MCQ)</span>
+                <span className="font-medium text-white">Round 2 — 20 short answers (core CS & basics)</span>
                 <span className="text-sky-400">Open →</span>
               </Link>
               <Link
                 href="/coding"
                 className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3 hover:border-slate-700"
               >
-                <span className="font-medium text-white">Round 3 — Coding</span>
+                <span className="font-medium text-white">Round 3 — 3 coding (Python / C++ / Java)</span>
                 <span className="text-sky-400">Open →</span>
               </Link>
             </>

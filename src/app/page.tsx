@@ -11,16 +11,16 @@ export default function HomePage() {
           Computational Science
         </h1>
         <p className="max-w-2xl text-lg text-slate-400">
-          Three rounds: core CS quiz, mixed problem solving, and coding challenges. Register, compete on a
-          timer, and climb the leaderboard.
+          Three rounds: 30 core-CS MCQs, 20 short-answer problems, then three LeetCode-style coding tasks in
+          Python, C++, or Java. Register, compete on a timer, and climb the leaderboard.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         {[
-          { n: "1", t: "Core CS", d: "MCQ — algorithms, OS, DB, networks" },
-          { n: "2", t: "Mixed", d: "Short answers + reasoning MCQ" },
-          { n: "3", t: "Coding", d: "Python problems, auto-judged via Judge0" },
+          { n: "1", t: "Core CS", d: "30 MCQs — DS, algos, OS, DB, networks" },
+          { n: "2", t: "Short answer", d: "20 text answers — core CS & basic problem solving" },
+          { n: "3", t: "Coding", d: "2 easy + 1 medium — function/class only, Judge0" },
         ].map((x) => (
           <div
             key={x.n}

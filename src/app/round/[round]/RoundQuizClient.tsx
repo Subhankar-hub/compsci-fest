@@ -19,6 +19,9 @@ type Payload = {
   round: number;
   endsAt: string;
   questions: Q[];
+  roundScore?: number;
+  roundMax?: number;
+  allAnswered?: boolean;
   error?: string;
 };
 
@@ -49,6 +52,12 @@ export function RoundQuizClient({ round }: { round: number }) {
   }, [load]);
 
   const expired = data?.endsAt && new Date(data.endsAt).getTime() < Date.now();
+
+  const totalQ = data?.questions.length ?? 0;
+  const answeredCount = data?.questions.filter((q) => q.answered).length ?? 0;
+  const allAnswered = Boolean(data?.allAnswered);
+  const roundScore = data?.roundScore ?? 0;
+  const roundMax = data?.roundMax ?? 0;
 
   async function submit() {
     if (!data || expired) return;
@@ -82,9 +91,13 @@ export function RoundQuizClient({ round }: { round: number }) {
         setMsg(j.error ?? "Submit failed");
         return;
       }
-      setMsg(`Saved. Points from this batch: ${j.gained ?? 0}`);
+      let nextMsg = `Saved. Points from this batch: ${j.gained ?? 0}.`;
+      if (j.roundComplete) {
+        nextMsg += ` Round score so far: ${j.roundScore ?? 0} / ${j.roundMax ?? 0}. You can move to the next round.`;
+      }
+      setMsg(nextMsg);
       router.refresh();
-      load();
+      await load();
     } finally {
       setSaving(false);
     }
@@ -103,18 +116,63 @@ export function RoundQuizClient({ round }: { round: number }) {
     );
   }
 
+  const nextHref = round === 1 ? "/round/2" : "/coding";
+  const nextLabel = round === 1 ? "Continue to Round 2" : "Continue to Round 3 (Coding)";
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">Round {data.round}</h1>
-          <p className="text-sm text-slate-500">Submit answers before the timer ends.</p>
+          <p className="text-sm text-slate-500">
+            {data.round === 1 && "30 multiple-choice questions (core CS). "}
+            {data.round === 2 &&
+              "20 short answers (core CS & problem-solving basics). Matching ignores case and extra spaces. "}
+            Submit answers before the timer ends.
+          </p>
+          <p className="mt-2 text-sm text-slate-400">
+            Progress:{" "}
+            <span className="font-medium text-sky-300">
+              {answeredCount} / {totalQ}
+            </span>{" "}
+            questions saved · Round score:{" "}
+            <span className="font-medium text-sky-300">
+              {roundScore} / {roundMax}
+            </span>
+          </p>
         </div>
         <div className="text-right">
           <p className="text-xs uppercase text-slate-500">Time left</p>
           <RoundTimer endsAt={data.endsAt} />
         </div>
       </div>
+
+      {allAnswered && (
+        <div className="rounded-xl border border-emerald-700/50 bg-emerald-950/35 px-5 py-4 text-emerald-50">
+          <h2 className="text-lg font-semibold text-white">Round {data.round} complete</h2>
+          <p className="mt-1 text-sm text-emerald-100/90">
+            You have submitted every question in this round. Score for this round:{" "}
+            <span className="font-bold text-white">
+              {roundScore} / {roundMax}
+            </span>{" "}
+            points.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href={nextHref}
+              className="inline-flex rounded-lg bg-sky-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400"
+            >
+              {nextLabel}
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex rounded-lg border border-slate-600 px-5 py-2.5 text-sm text-slate-200 hover:border-slate-500"
+            >
+              Dashboard
+            </Link>
+          </div>
+        </div>
+      )}
 
       {expired && (
         <p className="rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-amber-200">
@@ -124,13 +182,12 @@ export function RoundQuizClient({ round }: { round: number }) {
 
       <div className="space-y-8">
         {data.questions.map((q, idx) => (
-          <div
-            key={q.id}
-            className="rounded-xl border border-slate-800 bg-slate-900/40 p-5"
-          >
+          <div key={q.id} className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
               <span className="text-xs font-semibold text-sky-500">Q{idx + 1}</span>
-              <span className="text-xs text-slate-500">{q.points} pts · {q.kind}</span>
+              <span className="text-xs text-slate-500">
+                {q.points} pts · {q.kind}
+              </span>
             </div>
             <p className="text-white">{q.prompt}</p>
             {q.kind === "MCQ" && q.choices && (
@@ -183,6 +240,11 @@ export function RoundQuizClient({ round }: { round: number }) {
         >
           {saving ? "Saving…" : "Submit answers"}
         </button>
+        {!allAnswered && (
+          <p className="self-center text-xs text-slate-500">
+            Submit each answer so it is saved; when all are saved, you can open the next round.
+          </p>
+        )}
         <Link href="/dashboard" className="rounded-lg border border-slate-700 px-5 py-2.5 text-slate-300">
           Dashboard
         </Link>

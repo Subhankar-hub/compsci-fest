@@ -37,8 +37,12 @@ export async function GET(_req: Request, { params }: Params) {
   });
   const submitted = new Map(existing.map((e) => [e.questionId, e]));
 
+  let roundScore = 0;
+  const roundMax = questions.reduce((s, q) => s + q.points, 0);
+
   const payload = questions.map((q) => {
     const sub = submitted.get(q.id);
+    if (sub) roundScore += sub.score;
     return {
       id: q.id,
       order: q.order,
@@ -52,11 +56,16 @@ export async function GET(_req: Request, { params }: Params) {
     };
   });
 
+  const allAnswered = payload.length > 0 && payload.every((q) => q.answered);
+
   return NextResponse.json({
     round,
     endsAt: window.endsAt.toISOString(),
     startedAt: window.startedAt.toISOString(),
     minutes: window.minutes,
+    roundScore,
+    roundMax,
+    allAnswered,
     questions: payload,
   });
 }
