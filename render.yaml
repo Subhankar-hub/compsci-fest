@@ -1,0 +1,32 @@
+# Blueprint: connect repo → Render creates DB + web service.
+# After first deploy: Shell → `npm run db:seed` once to load demo questions.
+
+databases:
+  - name: cs-fest-db
+    plan: free
+    databaseName: cs_fest
+    user: cs_fest
+
+services:
+  - type: web
+    name: computational-science
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cs-fest-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: RAPIDAPI_KEY
+        sync: false
+      - key: JUDGE0_HOST
+        value: judge0-ce.p.rapidapi.com

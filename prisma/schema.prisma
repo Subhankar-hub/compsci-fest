@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum QuizKind {
+  MCQ
+  SHORT
+}
+
+model Team {
+  id             String             @id @default(cuid())
+  name           String             @unique
+  passwordHash   String
+  createdAt      DateTime           @default(now())
+  submissions    QuizSubmission[]
+  codingSubs     CodingSubmission[]
+  roundStarts    RoundStart[]
+}
+
+model RoundStart {
+  id        String   @id @default(cuid())
+  teamId    String
+  round     Int
+  startedAt DateTime @default(now())
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, round])
+}
+
+model QuizQuestion {
+  id           String     @id @default(cuid())
+  round        Int
+  order        Int
+  kind         QuizKind   @default(MCQ)
+  prompt       String
+  choices      Json?
+  correctIndex Int?
+  acceptable   Json?
+  points       Int        @default(1)
+  submissions  QuizSubmission[]
+}
+
+model QuizSubmission {
+  id           String       @id @default(cuid())
+  teamId       String
+  questionId   String
+  choiceIndex  Int?
+  answerText   String?
+  score        Int          @default(0)
+  submittedAt  DateTime     @default(now())
+  question     QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  team         Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, questionId])
+}
+
+model CodingProblem {
+  id          String             @id @default(cuid())
+  order       Int
+  title       String
+  description String
+  judge0LangId Int               @default(71)
+  starterCode String?
+  tests       Json
+  publicIn    String?
+  publicOut   String?
+  points      Int                @default(10)
+  submissions CodingSubmission[]
+}
+
+model CodingSubmission {
+  id          String        @id @default(cuid())
+  teamId      String
+  problemId   String
+  code        String
+  status      String
+  passed      Int           @default(0)
+  total       Int           @default(0)
+  score       Int           @default(0)
+  detail      String?
+  submittedAt DateTime      @default(now())
+  problem     CodingProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  team        Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, problemId])
+}
+
+model Settings {
+  id            Int    @id @default(1)
+  eventTitle    String @default("Computational Science")
+  round1Mins    Int    @default(45)
+  round2Mins    Int    @default(60)
+  round3Mins    Int    @default(75)
+  roundsUnlocked Int   @default(0)
+}
