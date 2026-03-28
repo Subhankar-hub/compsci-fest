@@ -32,6 +32,7 @@ type Payload = {
 export function CodingClient() {
   const [data, setData] = useState<Payload | null>(null);
   const [code, setCode] = useState<Record<string, string>>({});
+  const [lang, setLang] = useState<Record<string, number>>({});
   const [msg, setMsg] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -50,6 +51,13 @@ export function CodingClient() {
       }
       return next;
     });
+    setLang((prev) => {
+      const next = { ...prev };
+      for (const p of j.problems as Problem[]) {
+        if (next[p.id] == null) next[p.id] = 71;
+      }
+      return next;
+    });
   }, []);
 
   useEffect(() => {
@@ -61,6 +69,7 @@ export function CodingClient() {
   async function submit(problemId: string) {
     if (!data || expired) return;
     const src = code[problemId] ?? "";
+    const langId = lang[problemId] ?? 71;
     if (!src.trim()) {
       setMsg((m) => ({ ...m, [problemId]: "Write some code first." }));
       return;
@@ -71,7 +80,7 @@ export function CodingClient() {
       const res = await fetch("/api/coding/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ problemId, code: src }),
+        body: JSON.stringify({ problemId, code: src, langId }),
       });
       const j = await res.json();
       if (!res.ok) {
@@ -107,7 +116,7 @@ export function CodingClient() {
         <div>
           <h1 className="text-2xl font-bold text-white">Round 3 — Coding</h1>
           <p className="text-sm text-slate-500">
-            Python (Judge0).{" "}
+            Internal Judge.{" "}
             {!data.judgeConfigured && (
               <span className="text-amber-400">
                 Server has no RAPIDAPI_KEY — submissions stay pending for manual review.
@@ -132,7 +141,19 @@ export function CodingClient() {
           <section key={p.id} className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
             <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-xl font-semibold text-white">{p.title}</h2>
-              <span className="text-sm text-slate-500">{p.points} pts</span>
+              <div className="flex items-center gap-3">
+                <select
+                  className="rounded bg-slate-800 px-2 py-1 text-sm text-slate-300 outline-none"
+                  value={lang[p.id] ?? 71}
+                  onChange={(e) => setLang((l) => ({ ...l, [p.id]: Number(e.target.value) }))}
+                  disabled={Boolean(expired)}
+                >
+                  <option value={71}>Python</option>
+                  <option value={62}>Java</option>
+                  <option value={54}>C++</option>
+                </select>
+                <span className="text-sm text-slate-500">{p.points} pts</span>
+              </div>
             </div>
             <pre className="mb-4 whitespace-pre-wrap font-sans text-sm text-slate-300">
               {p.description}

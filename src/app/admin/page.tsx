@@ -9,11 +9,13 @@ type Settings = {
   round3Mins: number;
   roundsUnlocked: number;
 };
+type TeamScore = { name: string; quizScore: number; codingScore: number; total: number; lastActive: string | null };
 
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [scores, setScores] = useState<TeamScore[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +29,11 @@ export default function AdminPage() {
     const s = await res.json();
     setAuthed(true);
     setSettings(s);
+    const res2 = await fetch("/api/admin/submissions");
+    if (res2.ok) {
+      const j2 = await res2.json();
+      setScores(j2.teams || []);
+    }
   }, []);
 
   useEffect(() => {
@@ -140,11 +147,10 @@ export default function AdminPage() {
                 setSettings({ ...settings, roundsUnlocked: n });
                 save({ roundsUnlocked: n });
               }}
-              className={`rounded-lg px-4 py-2 text-sm font-medium ${
-                settings.roundsUnlocked === n
+              className={`rounded-lg px-4 py-2 text-sm font-medium ${settings.roundsUnlocked === n
                   ? "bg-sky-500 text-slate-950"
                   : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-              }`}
+                }`}
             >
               {n}
             </button>
@@ -175,6 +181,42 @@ export default function AdminPage() {
             />
           </div>
         ))}
+      </div>
+
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white">Live Scoreboard & Activity</h2>
+          <button onClick={load} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded">Refresh</button>
+        </div>
+        <div className="overflow-x-auto text-sm">
+          <table className="w-full text-left">
+            <thead className="bg-slate-950/80 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-2">Team</th>
+                <th className="px-4 py-2">Quiz</th>
+                <th className="px-4 py-2">Coding</th>
+                <th className="px-4 py-2">Total</th>
+                <th className="px-4 py-2">Last Active</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {scores.map((s) => (
+                <tr key={s.name} className="hover:bg-slate-900/40 text-slate-300">
+                  <td className="px-4 py-2 font-medium text-white">{s.name}</td>
+                  <td className="px-4 py-2">{s.quizScore}</td>
+                  <td className="px-4 py-2">{s.codingScore}</td>
+                  <td className="px-4 py-2 text-sky-400 font-bold">{s.total}</td>
+                  <td className="px-4 py-2 text-xs text-slate-500">
+                    {s.lastActive ? new Date(s.lastActive).toLocaleTimeString() : "Never"}
+                  </td>
+                </tr>
+              ))}
+              {scores.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-500">No teams/data yet.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

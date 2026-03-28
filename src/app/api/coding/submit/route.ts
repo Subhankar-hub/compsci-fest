@@ -8,6 +8,7 @@ import { runJudge0 } from "@/lib/judge0";
 const bodySchema = z.object({
   problemId: z.string(),
   code: z.string().min(1).max(100_000),
+  langId: z.number().optional(),
 });
 
 export async function POST(req: Request) {
@@ -74,7 +75,8 @@ export async function POST(req: Request) {
     });
   }
 
-  const result = await runJudge0(parsed.data.code, problem.judge0LangId, tests);
+  const judgeLang = parsed.data.langId ?? problem.judge0LangId;
+  const result = await runJudge0(parsed.data.code, judgeLang, tests);
   const ratio = tests.length ? result.passed / tests.length : 0;
   const score = Math.round(ratio * problem.points);
 
