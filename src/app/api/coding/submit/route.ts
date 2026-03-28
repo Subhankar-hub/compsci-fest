@@ -84,6 +84,8 @@ export async function POST(req: Request) {
       : "PARTIAL"
     : "ERROR";
 
+  const detail = result.ok ? result.detail : result.error;
+
   const row = await prisma.codingSubmission.upsert({
     where: {
       teamId_problemId: { teamId: session.teamId, problemId: problem.id },
@@ -96,7 +98,7 @@ export async function POST(req: Request) {
       passed: result.passed,
       total: tests.length,
       score,
-      detail: "detail" in result ? result.detail : result.error,
+      detail,
     },
     update: {
       code: parsed.data.code,
@@ -104,7 +106,7 @@ export async function POST(req: Request) {
       passed: result.passed,
       total: tests.length,
       score,
-      detail: "detail" in result ? result.detail : result.error,
+      detail,
     },
   });
 
