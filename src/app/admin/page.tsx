@@ -240,6 +240,73 @@ export default function AdminPage() {
         ))}
       </div>
 
+      <div className="rounded-xl border border-amber-900/40 bg-amber-950/20 p-5 space-y-3">
+        <h2 className="text-lg font-bold text-white">Question bank (fix missing items)</h2>
+        <p className="text-xs text-slate-400">
+          If participants see fewer than 30 round-1 or 20 round-2 questions, or round 3 does not list 3 problems, the
+          database is out of date. Use these to replace content from the built-in seed files. This deletes existing answers
+          in that scope.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="rounded-lg bg-amber-600/90 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-500"
+            onClick={async () => {
+              if (
+                !window.confirm(
+                  "Replace rounds 1–2 with 30 MCQ + 20 short questions from the app seed, and delete ALL quiz submissions for those rounds?",
+                )
+              ) {
+                return;
+              }
+              setErr(null);
+              const res = await fetch("/api/admin/event-content", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ quiz: true }),
+              });
+              const j = await res.json();
+              if (!res.ok) {
+                setErr(j.error ?? "Sync failed");
+                return;
+              }
+              window.alert(
+                `Quiz synced: round1 questions = ${j.quizRound1Questions}, round2 = ${j.quizRound2Questions}`,
+              );
+            }}
+          >
+            Sync rounds 1–2 (30 + 20)
+          </button>
+          <button
+            type="button"
+            className="rounded-lg bg-amber-600/90 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-amber-500"
+            onClick={async () => {
+              if (
+                !window.confirm(
+                  "Replace all coding problems from seed and delete ALL coding submissions for every participant?",
+                )
+              ) {
+                return;
+              }
+              setErr(null);
+              const res = await fetch("/api/admin/event-content", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ coding: true }),
+              });
+              const j = await res.json();
+              if (!res.ok) {
+                setErr(j.error ?? "Sync failed");
+                return;
+              }
+              window.alert(`Coding synced: problems = ${j.codingProblems}`);
+            }}
+          >
+            Sync round 3 coding (3 problems)
+          </button>
+        </div>
+      </div>
+
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-white">Participants</h2>

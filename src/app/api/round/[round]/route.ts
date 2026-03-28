@@ -6,6 +6,8 @@ import { ensureRoundStarted } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
 import { QuizKind } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ round: string }> };
 
 export async function GET(_req: Request, { params }: Params) {

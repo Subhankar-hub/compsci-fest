@@ -53,7 +53,7 @@ export function CodingClient() {
   const [me, setMe] = useState<MeScores | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch("/api/coding");
+    const res = await fetch("/api/coding", { cache: "no-store" });
     const j = await res.json();
     if (!res.ok) {
       setData({ endsAt: "", problems: [], judgeConfigured: false, error: j.error ?? "Failed" });
@@ -92,7 +92,7 @@ export function CodingClient() {
       setMe(null);
       return;
     }
-    fetch("/api/me")
+    fetch("/api/me", { cache: "no-store" })
       .then((r) => r.json())
       .then((j) => {
         if (j.team == null) return;
@@ -127,6 +127,7 @@ export function CodingClient() {
       const res = await fetch("/api/coding/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ problemId, code: src, langId }),
       });
       const j = await res.json();
@@ -138,7 +139,7 @@ export function CodingClient() {
         ...m,
         [problemId]: `${j.status} — ${j.passed}/${j.total} tests, score ${j.score}. ${j.detail ?? ""}`,
       }));
-      load();
+      await load();
     } finally {
       setBusy(null);
     }
@@ -163,8 +164,10 @@ export function CodingClient() {
         <div>
           <h1 className="text-2xl font-bold text-white">Round 3 — Coding</h1>
           <p className="text-sm text-slate-500">
-            Two easy and one medium problem. Submit only the function or <code className="text-slate-400">class Solution</code>{" "}
-            block (LeetCode / GFG style). Python, C++, or Java — hidden tests run automatically.
+            {probs.length} problem{probs.length === 1 ? "" : "s"} loaded (expect 3: two easy, one medium). If the list is wrong,
+            the organiser should sync coding problems in admin. Submit only the function or{" "}
+            <code className="text-slate-400">class Solution</code> block (LeetCode / GFG style). Python, C++, or Java — hidden
+            tests run automatically.
             {!data.judgeConfigured && (
               <span className="ml-1 text-amber-400">
                 Server has no RAPIDAPI_KEY — submissions stay pending for manual review.

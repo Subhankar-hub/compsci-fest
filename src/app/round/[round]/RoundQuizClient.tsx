@@ -33,18 +33,21 @@ export function RoundQuizClient({ round }: { round: number }) {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/round/${round}`);
+    const res = await fetch(`/api/round/${round}`, { cache: "no-store" });
     const j = await res.json();
     if (!res.ok) {
       setData({ round, endsAt: "", questions: [], error: j.error ?? "Failed to load" });
       return;
     }
     setData(j);
-    const init: Record<string, { choice?: number; text?: string }> = {};
-    for (const q of j.questions as Q[]) {
-      init[q.id] = {};
-    }
-    setAnswers((prev) => ({ ...init, ...prev }));
+    const qs = j.questions as Q[];
+    setAnswers((prev) => {
+      const next: Record<string, { choice?: number; text?: string }> = {};
+      for (const q of qs) {
+        next[q.id] = prev[q.id] ?? {};
+      }
+      return next;
+    });
   }, [round]);
 
   useEffect(() => {
@@ -84,6 +87,7 @@ export function RoundQuizClient({ round }: { round: number }) {
       const res = await fetch(`/api/round/${round}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ answers: filtered }),
       });
       const j = await res.json();
@@ -125,9 +129,10 @@ export function RoundQuizClient({ round }: { round: number }) {
         <div>
           <h1 className="text-2xl font-bold text-white">Round {data.round}</h1>
           <p className="text-sm text-slate-500">
-            {data.round === 1 && "30 multiple-choice questions (core CS). "}
+            {data.round === 1 &&
+              `${totalQ} multiple-choice questions (core CS). If you see fewer than 30, ask the organiser to sync question bank in admin. `}
             {data.round === 2 &&
-              "20 short answers (core CS & problem-solving basics). Matching ignores case and extra spaces. "}
+              `${totalQ} short answers (core CS & problem-solving basics). Matching ignores case and extra spaces. If you see fewer than 20, ask the organiser to sync question bank in admin. `}
             Submit answers before the timer ends.
           </p>
           <p className="mt-2 text-sm text-slate-400">
@@ -140,6 +145,22 @@ export function RoundQuizClient({ round }: { round: number }) {
               {roundScore} / {roundMax}
             </span>
           </p>
+          {totalQ > 8 && (
+            <div className="mt-3 max-h-32 overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/60 p-2">
+              <p className="mb-1.5 text-xs text-slate-500">Jump to question (scroll the page for full list)</p>
+              <div className="flex flex-wrap gap-1">
+                {data.questions.map((q, i) => (
+                  <a
+                    key={q.id}
+                    href={`#q-${i + 1}`}
+                    className={`rounded px-2 py-0.5 text-xs no-underline ${q.answered ? "bg-emerald-900/50 text-emerald-200" : "bg-slate-800 text-slate-400 hover:text-slate-200"}`}
+                  >
+                    {i + 1}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div className="text-right">
           <p className="text-xs uppercase text-slate-500">Time left</p>
@@ -182,7 +203,11 @@ export function RoundQuizClient({ round }: { round: number }) {
 
       <div className="space-y-8">
         {data.questions.map((q, idx) => (
-          <div key={q.id} className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+          <div
+            id={`q-${idx + 1}`}
+            key={q.id}
+            className="scroll-mt-24 rounded-xl border border-slate-800 bg-slate-900/40 p-5"
+          >
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
               <span className="text-xs font-semibold text-sky-500">Q{idx + 1}</span>
               <span className="text-xs text-slate-500">

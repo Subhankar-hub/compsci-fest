@@ -6,6 +6,8 @@ import { ensureRoundStarted } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
 import { extractStarters, isFunctionalPack } from "@/lib/coding-bundle";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const session = await getTeamSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

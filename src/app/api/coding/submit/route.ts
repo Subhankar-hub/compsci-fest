@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { buildBundledSource } from "@/lib/coding-bundle";
 import { runJudge0 } from "@/lib/judge0";
 
+export const dynamic = "force-dynamic";
+
 const bodySchema = z.object({
   problemId: z.string(),
   code: z.string().min(1).max(100_000),

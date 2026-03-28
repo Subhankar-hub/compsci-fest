@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { scoreAnswer } from "@/lib/score-quiz";
 import { QuizKind } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: Promise<{ round: string }> };
 
 const item = z.object({

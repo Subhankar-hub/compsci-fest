@@ -81,6 +81,11 @@ async function main() {
       },
     });
   }
+
+  const nR1 = await prisma.quizQuestion.count({ where: { round: 1 } });
+  const nR2 = await prisma.quizQuestion.count({ where: { round: 2 } });
+  const nCode = await prisma.codingProblem.count();
+  console.log(`Seeded questions: round1=${nR1} (expected ${round1Mcq.length}), round2=${nR2} (expected ${round2Short.length}), coding=${nCode} (expected ${codingRoundProblems.length})`);
 }
 
 main()
