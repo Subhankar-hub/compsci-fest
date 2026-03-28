@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type Row = { name: string; quizScore: number; codingScore: number; total: number };
+type Row = { name: string; quizScore: number; codingScore: number; total: number; lastActive?: string | null };
 
 export default function LeaderboardPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -23,17 +23,18 @@ export default function LeaderboardPage() {
           <thead className="bg-slate-900/80 text-xs uppercase text-slate-500">
             <tr>
               <th className="px-4 py-3">#</th>
-              <th className="px-4 py-3">Team</th>
+              <th className="px-4 py-3">Participant</th>
               <th className="px-4 py-3">Quiz</th>
               <th className="px-4 py-3">Code</th>
               <th className="px-4 py-3">Total</th>
+              <th className="px-4 py-3">Latest Submission</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800 bg-slate-950/50">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
-                  No teams yet.
+                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                  No participants yet.
                 </td>
               </tr>
             ) : (
@@ -44,6 +45,9 @@ export default function LeaderboardPage() {
                   <td className="px-4 py-3 text-slate-400">{r.quizScore}</td>
                   <td className="px-4 py-3 text-slate-400">{r.codingScore}</td>
                   <td className="px-4 py-3 font-semibold text-sky-300">{r.total}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500">
+                    {r.lastActive ? new Date(r.lastActive).toLocaleTimeString() : "—"}
+                  </td>
                 </tr>
               ))
             )}

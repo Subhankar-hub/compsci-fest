@@ -36,12 +36,12 @@ export default function RegisterPage() {
   return (
     <div className="mx-auto max-w-md space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">Create team</h1>
-        <p className="mt-2 text-slate-400">Pick a unique team name and passphrase.</p>
+        <h1 className="text-2xl font-bold text-white">Register</h1>
+        <p className="mt-2 text-slate-400">Pick a unique participant name and passphrase.</p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm text-slate-400">Team name</label>
+          <label className="block text-sm text-slate-400">Participant Name</label>
           <input
             className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-white outline-none focus:border-sky-500"
             value={name}
@@ -73,7 +73,7 @@ export default function RegisterPage() {
         </button>
       </form>
       <p className="text-center text-sm text-slate-500">
-        Already have a team?{" "}
+        Already registered?{" "}
         <Link href="/login" className="text-sky-400 hover:underline">
           Log in
         </Link>
