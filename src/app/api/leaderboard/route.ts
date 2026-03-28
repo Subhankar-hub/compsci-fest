@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { participantDisplayName } from "@/lib/participant-display";
 
 export async function GET() {
   const teams = await prisma.team.findMany({
@@ -18,14 +19,18 @@ export async function GET() {
       const allSubs = [...t.submissions, ...t.codingSubs].sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime());
       const lastActive = allSubs.length > 0 ? allSubs[0].submittedAt.toISOString() : null;
       return {
-        name: t.name,
+        id: t.id,
+        name: participantDisplayName(t),
         quizScore: quiz,
         codingScore: code,
         total: quiz + code,
         lastActive,
       };
     })
-    .sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+    .sort(
+      (a, b) =>
+        b.total - a.total || a.name.localeCompare(b.name) || a.id.localeCompare(b.id),
+    );
 
   return NextResponse.json({ rows });
 }

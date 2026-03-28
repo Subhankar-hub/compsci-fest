@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-type Row = { name: string; quizScore: number; codingScore: number; total: number; lastActive?: string | null };
+type Row = {
+  id: string;
+  name: string;
+  quizScore: number;
+  codingScore: number;
+  total: number;
+  lastActive?: string | null;
+};
 
 export default function LeaderboardPage() {
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -39,7 +46,7 @@ export default function LeaderboardPage() {
               </tr>
             ) : (
               rows.map((r, i) => (
-                <tr key={r.name} className="hover:bg-slate-900/40">
+                <tr key={r.id} className="hover:bg-slate-900/40">
                   <td className="px-4 py-3 text-slate-500">{i + 1}</td>
                   <td className="px-4 py-3 font-medium text-white">{r.name}</td>
                   <td className="px-4 py-3 text-slate-400">{r.quizScore}</td>

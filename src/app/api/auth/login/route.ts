@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { participantDisplayName } from "@/lib/participant-display";
 import { signTeamToken, TEAM } from "@/lib/session";
 
 const bodySchema = z.object({
-  name: z.string().min(1).max(64).trim(),
+  rollNo: z.string().min(1).max(32).trim(),
   password: z.string().min(1).max(128),
 });
 
@@ -20,8 +21,8 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 400 });
   }
-  const { name, password } = parsed.data;
-  const team = await prisma.team.findUnique({ where: { name } });
+  const { rollNo, password } = parsed.data;
+  const team = await prisma.team.findUnique({ where: { rollNo } });
   if (!team) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
@@ -29,8 +30,8 @@ export async function POST(req: Request) {
   if (!ok) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
-  const token = await signTeamToken(team.id, team.name);
-  const res = NextResponse.json({ ok: true, name: team.name });
+  const token = await signTeamToken(team.id, participantDisplayName(team));
+  const res = NextResponse.json({ ok: true });
   res.cookies.set(TEAM, token, {
     httpOnly: true,
     sameSite: "lax",

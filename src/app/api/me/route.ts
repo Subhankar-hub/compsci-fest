@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getTeamSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { participantDisplayName } from "@/lib/participant-display";
 
 export async function GET() {
   const s = await getTeamSession();
@@ -33,7 +34,7 @@ export async function GET() {
 
   return NextResponse.json({
     team: {
-      name: teamRow.name,
+      displayName: participantDisplayName(teamRow),
       firstName: teamRow.firstName,
       lastName: teamRow.lastName,
       rollNo: teamRow.rollNo,

@@ -25,7 +25,14 @@ async function main() {
 
   const demoHash = await bcrypt.hash("demo123", 10);
   await prisma.team.create({
-    data: { name: "Demo Team", passwordHash: demoHash },
+    data: {
+      name: "Demo User",
+      firstName: "Demo",
+      lastName: "User",
+      rollNo: "DEMO001",
+      passwordHash: demoHash,
+      verified: true,
+    },
   });
 
   const r1: { prompt: string; choices: string[]; correctIndex: number; points?: number }[] = [

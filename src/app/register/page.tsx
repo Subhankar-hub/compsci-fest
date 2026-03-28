@@ -9,7 +9,6 @@ export default function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [rollNo, setRollNo] = useState("");
-  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +21,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, rollNo, name, password }),
+        body: JSON.stringify({ firstName, lastName, rollNo, password }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -41,7 +40,8 @@ export default function RegisterPage() {
       <div>
         <h1 className="text-2xl font-bold text-white">Register</h1>
         <p className="mt-2 text-slate-400">
-          Enter your details and choose a login name. An organiser must approve your registration before you can take part in rounds.
+          Use your roll number to sign in after registering. An organiser must approve your registration before
+          you can take part in rounds.
         </p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4">
@@ -71,19 +71,9 @@ export default function RegisterPage() {
             className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-white outline-none focus:border-sky-500"
             value={rollNo}
             onChange={(e) => setRollNo(e.target.value)}
-            autoComplete="off"
-            required
-          />
-        </div>
-        <div>
-          <label className="block text-sm text-slate-400">Participant Name</label>
-          <input
-            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-white outline-none focus:border-sky-500"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
             autoComplete="username"
             required
-            minLength={2}
+            minLength={1}
           />
         </div>
         <div>

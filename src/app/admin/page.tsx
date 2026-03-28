@@ -9,14 +9,21 @@ type Settings = {
   round3Mins: number;
   roundsUnlocked: number;
 };
-type TeamScore = { name: string; quizScore: number; codingScore: number; total: number; lastActive: string | null };
+type TeamScore = {
+  id: string;
+  name: string;
+  quizScore: number;
+  codingScore: number;
+  total: number;
+  lastActive: string | null;
+};
 
 type Participant = {
   id: string;
   name: string;
   firstName: string;
   lastName: string;
-  rollNo: string | null;
+  rollNo: string;
   verified: boolean;
   createdAt: string;
 };
@@ -252,9 +259,8 @@ export default function AdminPage() {
           <table className="w-full text-left">
             <thead className="bg-slate-950/80 text-xs uppercase text-slate-500">
               <tr>
-                <th className="px-4 py-2">Login</th>
-                <th className="px-4 py-2">Name</th>
                 <th className="px-4 py-2">Roll no.</th>
+                <th className="px-4 py-2">Name</th>
                 <th className="px-4 py-2">Status</th>
                 <th className="px-4 py-2 text-right">Actions</th>
               </tr>
@@ -262,11 +268,10 @@ export default function AdminPage() {
             <tbody className="divide-y divide-slate-800">
               {participants.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-900/40 text-slate-300">
-                  <td className="px-4 py-2 font-medium text-white">{p.name}</td>
-                  <td className="px-4 py-2">
-                    {[p.firstName, p.lastName].filter(Boolean).join(" ") || "—"}
+                  <td className="px-4 py-2 font-medium text-white">{p.rollNo}</td>
+                  <td className="px-4 py-2 text-slate-200">
+                    {[p.firstName, p.lastName].filter(Boolean).join(" ") || p.name || "—"}
                   </td>
-                  <td className="px-4 py-2 text-slate-400">{p.rollNo ?? "—"}</td>
                   <td className="px-4 py-2">
                     {p.verified ? (
                       <span className="text-emerald-400/90">Approved</span>
@@ -304,7 +309,7 @@ export default function AdminPage() {
               ))}
               {participants.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                  <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
                     No participants yet.
                   </td>
                 </tr>
@@ -332,7 +337,7 @@ export default function AdminPage() {
             </thead>
             <tbody className="divide-y divide-slate-800">
               {scores.map((s) => (
-                <tr key={s.name} className="hover:bg-slate-900/40 text-slate-300">
+                <tr key={s.id} className="hover:bg-slate-900/40 text-slate-300">
                   <td className="px-4 py-2 font-medium text-white">{s.name}</td>
                   <td className="px-4 py-2">{s.quizScore}</td>
                   <td className="px-4 py-2">{s.codingScore}</td>

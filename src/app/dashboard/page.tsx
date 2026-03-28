@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 
 type Me = {
   team: {
-    name: string;
+    displayName: string;
     firstName: string;
     lastName: string;
-    rollNo: string | null;
+    rollNo: string;
     verified: boolean;
   } | null;
   score: number;
@@ -64,7 +64,6 @@ export default function DashboardPage() {
   }
 
   const { team } = me;
-  const displayName = [team.firstName, team.lastName].filter(Boolean).join(" ") || team.name;
 
   return (
     <div className="space-y-10">
@@ -72,15 +71,10 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="mt-1 text-slate-400">
-            <span className="font-medium text-sky-300">{displayName}</span>
-            {team.rollNo ? (
-              <>
-                {" "}
-                · Roll <span className="text-slate-300">{team.rollNo}</span>
-              </>
-            ) : null}
+            <span className="font-medium text-sky-300">{team.displayName}</span>
+            {" "}
+            · Roll <span className="text-slate-300">{team.rollNo}</span>
           </p>
-          <p className="mt-0.5 text-sm text-slate-500">Login: {team.name}</p>
         </div>
         <button
           type="button"

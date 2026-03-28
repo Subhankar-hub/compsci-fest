@@ -11,8 +11,8 @@ export default function HomePage() {
           Computational Science
         </h1>
         <p className="max-w-2xl text-lg text-slate-400">
-          Three rounds: core CS quiz, mixed problem solving, and coding challenges. Register your
-          team, compete on a timer, and climb the leaderboard.
+          Three rounds: core CS quiz, mixed problem solving, and coding challenges. Register, compete on a
+          timer, and climb the leaderboard.
         </p>
       </div>
 
@@ -38,7 +38,7 @@ export default function HomePage() {
           href="/register"
           className="rounded-lg bg-sky-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-sky-400"
         >
-          Register team
+          Register
         </Link>
         <Link
           href="/login"

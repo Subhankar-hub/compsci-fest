@@ -14,10 +14,10 @@ enum QuizKind {
 
 model Team {
   id             String             @id @default(cuid())
-  name           String             @unique
+  name           String
   firstName      String             @default("")
   lastName       String             @default("")
-  rollNo         String?            @unique
+  rollNo         String             @unique
   passwordHash   String
   verified       Boolean            @default(false)
   createdAt      DateTime           @default(now())
