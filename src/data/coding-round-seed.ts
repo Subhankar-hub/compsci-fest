@@ -163,7 +163,7 @@ export const codingRoundProblems = [
 **Input (stdin):** one line of space-separated integers.  
 **Output (stdout):** one integer — the sum.
 
-Hidden tests run automatically; you only submit the function / class below (LeetCode / GFG style).`,
+Organisers grade by hand against the published spec; you only submit the function / class below (LeetCode / GFG style).`,
     judge0LangId: 71,
     starterCode: `def array_sum(nums):
     pass

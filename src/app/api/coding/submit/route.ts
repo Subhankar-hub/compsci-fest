@@ -5,7 +5,7 @@ import { ensureVerifiedParticipant } from "@/lib/team-verification";
 import { assertRoundOpen } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
 import { buildBundledSource } from "@/lib/coding-bundle";
-import { runJudge0 } from "@/lib/judge0";
+import { runJudgeCE } from "@/lib/judge0-ce";
 
 export const dynamic = "force-dynamic";
 
@@ -50,10 +50,12 @@ export async function POST(req: Request) {
   if (!bundled.ok) {
     return NextResponse.json({ error: bundled.error }, { status: 400 });
   }
-  const { source: judgeSource, cases: tests } = bundled;
-  const hasKey = Boolean(process.env.RAPIDAPI_KEY);
+  const { source: fullSource, cases: tests } = bundled;
 
-  if (!hasKey) {
+  const judgeLang = parsed.data.langId ?? problem.judge0LangId;
+  const result = await runJudgeCE(fullSource, judgeLang, tests);
+
+  if (!result.ok) {
     const row = await prisma.codingSubmission.upsert({
       where: {
         teamId_problemId: { teamId: session.teamId, problemId: problem.id },
@@ -62,43 +64,38 @@ export async function POST(req: Request) {
         teamId: session.teamId,
         problemId: problem.id,
         code: parsed.data.code,
-        status: "PENDING_REVIEW",
-        passed: 0,
+        status: "ERROR",
+        passed: result.passed,
         total: tests.length,
         score: 0,
-        detail: "Set RAPIDAPI_KEY on the server for auto-judging, or grade manually.",
+        detail: result.error,
       },
       update: {
         code: parsed.data.code,
-        status: "PENDING_REVIEW",
-        passed: 0,
+        status: "ERROR",
+        passed: result.passed,
         total: tests.length,
         score: 0,
-        detail: "Pending review",
+        detail: result.error,
       },
     });
     return NextResponse.json({
       ok: true,
       status: row.status,
-      passed: 0,
-      total: tests.length,
+      passed: row.passed,
+      total: row.total,
       score: 0,
       detail: row.detail,
     });
   }
 
-  const judgeLang = parsed.data.langId ?? problem.judge0LangId;
-  const result = await runJudge0(judgeSource, judgeLang, tests);
   const ratio = tests.length ? result.passed / tests.length : 0;
   const score = Math.round(ratio * problem.points);
 
-  const status = result.ok
-    ? result.passed === tests.length
-      ? "AC"
-      : "PARTIAL"
-    : "ERROR";
+  const status =
+    result.passed === tests.length ? "AC" : result.passed > 0 ? "PARTIAL" : "WA";
 
-  const detail = result.ok ? result.detail : result.error;
+  const detail = result.detail;
 
   const row = await prisma.codingSubmission.upsert({
     where: {

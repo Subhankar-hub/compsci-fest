@@ -35,7 +35,7 @@ type Problem = {
 type Payload = {
   endsAt: string;
   problems: Problem[];
-  judgeConfigured: boolean;
+  judgeConfigured?: boolean;
   error?: string;
 };
 
@@ -56,7 +56,7 @@ export function CodingClient() {
     const res = await fetch("/api/coding", { cache: "no-store" });
     const j = await res.json();
     if (!res.ok) {
-      setData({ endsAt: "", problems: [], judgeConfigured: false, error: j.error ?? "Failed" });
+      setData({ endsAt: "", problems: [], error: j.error ?? "Failed" });
       return;
     }
     setData(j);
@@ -166,13 +166,19 @@ export function CodingClient() {
           <p className="text-sm text-slate-500">
             {probs.length} problem{probs.length === 1 ? "" : "s"} loaded (expect 3: two easy, one medium). If the list is wrong,
             the organiser should sync coding problems in admin. Submit only the function or{" "}
-            <code className="text-slate-400">class Solution</code> block (LeetCode / GFG style). Python, C++, or Java — hidden
-            tests run automatically.
-            {!data.judgeConfigured && (
-              <span className="ml-1 text-amber-400">
-                Server has no RAPIDAPI_KEY — submissions stay pending for manual review.
-              </span>
-            )}
+            <code className="text-slate-400">class Solution</code> block (LeetCode / GFG style). Python, C++, or Java.
+            Click <strong className="text-slate-200">Submit solution</strong> to run your code against hidden tests
+            via the public{" "}
+            <a
+              href="https://ce.judge0.com"
+              className="text-sky-400 hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Judge0 CE
+            </a>{" "}
+            demo (no API key). Heavy events should self-host Judge0 and set{" "}
+            <code className="text-slate-400">JUDGE0_CE_URL</code>.
           </p>
         </div>
         <div className="text-right">
@@ -286,7 +292,7 @@ export function CodingClient() {
               disabled={busy === p.id || Boolean(expired)}
               className="mt-3 rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-40"
             >
-              {busy === p.id ? "Judging…" : "Run & submit"}
+              {busy === p.id ? "Running tests…" : "Submit solution"}
             </button>
           </section>
         ))}

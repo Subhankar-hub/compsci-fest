@@ -20,7 +20,7 @@ export default function HomePage() {
         {[
           { n: "1", t: "Core CS", d: "30 MCQs — DS, algos, OS, DB, networks" },
           { n: "2", t: "Short answer", d: "20 text answers — core CS & basic problem solving" },
-          { n: "3", t: "Coding", d: "2 easy + 1 medium — function/class only, Judge0" },
+          { n: "3", t: "Coding", d: "2 easy + 1 medium — function/class only, hand-graded" },
         ].map((x) => (
           <div
             key={x.n}

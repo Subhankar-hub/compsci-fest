@@ -31,7 +31,8 @@ export async function GET() {
     endsAt: window.endsAt.toISOString(),
     startedAt: window.startedAt.toISOString(),
     minutes: window.minutes,
-    judgeConfigured: Boolean(process.env.RAPIDAPI_KEY),
+    /** Auto-grade via public Judge0 CE (no API key). Override with JUDGE0_CE_URL for self-hosted. */
+    judgeConfigured: true,
     problems: problems.map((p) => {
       const testsUnknown = p.tests as unknown;
       const functional = isFunctionalPack(testsUnknown);

@@ -26,7 +26,3 @@ services:
         generateValue: true
       - key: ADMIN_PASSWORD
         sync: false
-      - key: RAPIDAPI_KEY
-        sync: false
-      - key: JUDGE0_HOST
-        value: judge0-ce.p.rapidapi.com
