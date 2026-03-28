@@ -11,11 +11,22 @@ type Settings = {
 };
 type TeamScore = { name: string; quizScore: number; codingScore: number; total: number; lastActive: string | null };
 
+type Participant = {
+  id: string;
+  name: string;
+  firstName: string;
+  lastName: string;
+  rollNo: string | null;
+  verified: boolean;
+  createdAt: string;
+};
+
 export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [authed, setAuthed] = useState(false);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [scores, setScores] = useState<TeamScore[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -24,15 +35,23 @@ export default function AdminPage() {
     if (res.status === 401) {
       setAuthed(false);
       setSettings(null);
+      setParticipants([]);
       return;
     }
     const s = await res.json();
     setAuthed(true);
     setSettings(s);
-    const res2 = await fetch("/api/admin/submissions");
+    const [res2, res3] = await Promise.all([
+      fetch("/api/admin/submissions"),
+      fetch("/api/admin/participants"),
+    ]);
     if (res2.ok) {
       const j2 = await res2.json();
       setScores(j2.teams || []);
+    }
+    if (res3.ok) {
+      const j3 = await res3.json();
+      setParticipants(j3.participants || []);
     }
   }, []);
 
@@ -81,6 +100,37 @@ export default function AdminPage() {
       return;
     }
     setSettings(j);
+  }
+
+  async function setVerified(teamId: string, verified: boolean) {
+    setErr(null);
+    const res = await fetch("/api/admin/participants", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamId, verified }),
+    });
+    const j = await res.json();
+    if (!res.ok) {
+      setErr(j.error ?? "Update failed");
+      return;
+    }
+    await load();
+  }
+
+  async function deleteParticipant(teamId: string) {
+    if (!window.confirm("Delete this participant and all of their submissions? This cannot be undone.")) {
+      return;
+    }
+    setErr(null);
+    const res = await fetch(`/api/admin/participants?teamId=${encodeURIComponent(teamId)}`, {
+      method: "DELETE",
+    });
+    const j = await res.json();
+    if (!res.ok) {
+      setErr(j.error ?? "Delete failed");
+      return;
+    }
+    await load();
   }
 
   if (!authed || !settings) {
@@ -185,6 +235,87 @@ export default function AdminPage() {
 
       <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
         <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white">Participants</h2>
+          <button
+            type="button"
+            onClick={load}
+            className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded"
+          >
+            Refresh
+          </button>
+        </div>
+        <p className="text-xs text-slate-500">
+          New registrations start as pending. Approve to allow quiz and coding access; delete removes the account
+          and all submissions.
+        </p>
+        <div className="overflow-x-auto text-sm">
+          <table className="w-full text-left">
+            <thead className="bg-slate-950/80 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-2">Login</th>
+                <th className="px-4 py-2">Name</th>
+                <th className="px-4 py-2">Roll no.</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800">
+              {participants.map((p) => (
+                <tr key={p.id} className="hover:bg-slate-900/40 text-slate-300">
+                  <td className="px-4 py-2 font-medium text-white">{p.name}</td>
+                  <td className="px-4 py-2">
+                    {[p.firstName, p.lastName].filter(Boolean).join(" ") || "—"}
+                  </td>
+                  <td className="px-4 py-2 text-slate-400">{p.rollNo ?? "—"}</td>
+                  <td className="px-4 py-2">
+                    {p.verified ? (
+                      <span className="text-emerald-400/90">Approved</span>
+                    ) : (
+                      <span className="text-amber-400/90">Pending</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2 text-right space-x-2 whitespace-nowrap">
+                    {p.verified ? (
+                      <button
+                        type="button"
+                        onClick={() => setVerified(p.id, false)}
+                        className="text-xs text-amber-400/90 hover:underline"
+                      >
+                        Revoke
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setVerified(p.id, true)}
+                        className="text-xs text-sky-400 hover:underline"
+                      >
+                        Approve
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => deleteParticipant(p.id)}
+                      className="text-xs text-red-400/90 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {participants.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                    No participants yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+        <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-white">Live Scoreboard & Activity</h2>
           <button onClick={load} className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded">Refresh</button>
         </div>
@@ -192,7 +323,7 @@ export default function AdminPage() {
           <table className="w-full text-left">
             <thead className="bg-slate-950/80 text-xs uppercase text-slate-500">
               <tr>
-                <th className="px-4 py-2">Team</th>
+                <th className="px-4 py-2">Participant</th>
                 <th className="px-4 py-2">Quiz</th>
                 <th className="px-4 py-2">Coding</th>
                 <th className="px-4 py-2">Total</th>
@@ -212,7 +343,7 @@ export default function AdminPage() {
                 </tr>
               ))}
               {scores.length === 0 && (
-                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-500">No teams/data yet.</td></tr>
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-500">No scores yet.</td></tr>
               )}
             </tbody>
           </table>

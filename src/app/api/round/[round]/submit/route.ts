@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTeamSession } from "@/lib/session";
+import { ensureVerifiedParticipant } from "@/lib/team-verification";
 import { assertRoundOpen } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
 import { scoreAnswer } from "@/lib/score-quiz";
@@ -21,6 +22,9 @@ const bodySchema = z.object({
 export async function POST(req: Request, { params }: Params) {
   const session = await getTeamSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const v = await ensureVerifiedParticipant(session.teamId);
+  if (v) return v;
 
   const { round: rs } = await params;
   const round = Number(rs);

@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [rollNo, setRollNo] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -19,7 +22,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ firstName, lastName, rollNo, name, password }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -37,9 +40,41 @@ export default function RegisterPage() {
     <div className="mx-auto max-w-md space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-white">Register</h1>
-        <p className="mt-2 text-slate-400">Pick a unique participant name and passphrase.</p>
+        <p className="mt-2 text-slate-400">
+          Enter your details and choose a login name. An organiser must approve your registration before you can take part in rounds.
+        </p>
       </div>
       <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm text-slate-400">First name</label>
+          <input
+            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-white outline-none focus:border-sky-500"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            autoComplete="given-name"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-slate-400">Last name</label>
+          <input
+            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-white outline-none focus:border-sky-500"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            autoComplete="family-name"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-slate-400">Roll no.</label>
+          <input
+            className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-white outline-none focus:border-sky-500"
+            value={rollNo}
+            onChange={(e) => setRollNo(e.target.value)}
+            autoComplete="off"
+            required
+          />
+        </div>
         <div>
           <label className="block text-sm text-slate-400">Participant Name</label>
           <input

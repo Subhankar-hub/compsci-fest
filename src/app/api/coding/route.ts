@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getTeamSession } from "@/lib/session";
+import { ensureVerifiedParticipant } from "@/lib/team-verification";
 import { getSettings } from "@/lib/settings";
 import { ensureRoundStarted } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +8,9 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   const session = await getTeamSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const v = await ensureVerifiedParticipant(session.teamId);
+  if (v) return v;
 
   const settings = await getSettings();
   if (settings.roundsUnlocked < 3) {

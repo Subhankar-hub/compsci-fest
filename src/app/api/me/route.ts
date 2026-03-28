@@ -6,7 +6,17 @@ export async function GET() {
   const s = await getTeamSession();
   if (!s) return NextResponse.json({ team: null });
 
-  const [quizSum, codeSum] = await Promise.all([
+  const [teamRow, quizSum, codeSum] = await Promise.all([
+    prisma.team.findUnique({
+      where: { id: s.teamId },
+      select: {
+        name: true,
+        firstName: true,
+        lastName: true,
+        rollNo: true,
+        verified: true,
+      },
+    }),
     prisma.quizSubmission.aggregate({
       where: { teamId: s.teamId },
       _sum: { score: true },
@@ -17,8 +27,18 @@ export async function GET() {
     }),
   ]);
 
+  if (!teamRow) {
+    return NextResponse.json({ team: null });
+  }
+
   return NextResponse.json({
-    team: { name: s.name },
+    team: {
+      name: teamRow.name,
+      firstName: teamRow.firstName,
+      lastName: teamRow.lastName,
+      rollNo: teamRow.rollNo,
+      verified: teamRow.verified,
+    },
     score: (quizSum._sum.score ?? 0) + (codeSum._sum.score ?? 0),
     quizScore: quizSum._sum.score ?? 0,
     codingScore: codeSum._sum.score ?? 0,

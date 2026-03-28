@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getTeamSession } from "@/lib/session";
+import { ensureVerifiedParticipant } from "@/lib/team-verification";
 import { getSettings } from "@/lib/settings";
 import { ensureRoundStarted } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
@@ -10,6 +11,9 @@ type Params = { params: Promise<{ round: string }> };
 export async function GET(_req: Request, { params }: Params) {
   const session = await getTeamSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const v = await ensureVerifiedParticipant(session.teamId);
+  if (v) return v;
 
   const { round: rs } = await params;
   const round = Number(rs);

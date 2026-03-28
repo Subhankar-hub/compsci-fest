@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTeamSession } from "@/lib/session";
+import { ensureVerifiedParticipant } from "@/lib/team-verification";
 import { assertRoundOpen } from "@/lib/round-window";
 import { prisma } from "@/lib/prisma";
 import { runJudge0 } from "@/lib/judge0";
@@ -14,6 +15,9 @@ const bodySchema = z.object({
 export async function POST(req: Request) {
   const session = await getTeamSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const v = await ensureVerifiedParticipant(session.teamId);
+  if (v) return v;
 
   const gate = await assertRoundOpen(session.teamId, 3);
   if (!gate.ok) {
